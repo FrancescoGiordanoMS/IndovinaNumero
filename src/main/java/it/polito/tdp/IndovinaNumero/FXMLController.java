@@ -1,11 +1,9 @@
-/**
- * Sample Skeleton for 'Scene.fxml' Controller Class
- */
-
 package it.polito.tdp.IndovinaNumero;
 
 import java.net.URL;
+import java.security.InvalidParameterException;
 import java.util.ResourceBundle;
+import it.polito.tdp.IndovinaNumero.Model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -15,11 +13,7 @@ import javafx.scene.layout.HBox;
 
 public class FXMLController {
 	
-	private int segreto;
-	private final int TMAX = 8;
-	private final int NMAX = 100;
-	private int tentativiFatti;
-
+	
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
 
@@ -45,14 +39,17 @@ public class FXMLController {
     @FXML // fx:id="txtTentativo"
     private TextField txtTentativo; // Value injected by FXMLLoader
 
+    private Model model;
+    
+    public void setModel(Model modello) {
+		this.model = modello;
+    }
+    
     @FXML
     void doNuovaPartita(ActionEvent event) {
-    	//gestione di una nuova partita
-    	this.segreto = (int)((Math.random() * NMAX) +1);
-    	this.tentativiFatti = 0;
-    	
+    	this.model.nuovaPartita();
     	//gestione interfaccia
-    	txtTentativi.setText(Integer.toString(TMAX));
+    	txtTentativi.setText(Integer.toString(this.model.getTMAX()));
     	hboxTentativi.setDisable(false);
     	txtRisultato.clear();    	
     }
@@ -71,34 +68,45 @@ public class FXMLController {
     	}
     	
     	//controllo 2 -> intervallo numerico corretto
-    	if(tentativo < 1 || tentativo > NMAX) {
+    	if(tentativo < 1 || tentativo > this.model.getNMAX()) {
     		txtRisultato.setText("Devi inserire un tentativo numerico tra 1 e 100!");
     		return;
     	}
     	
-    	this.tentativiFatti ++;
+    	int risultato;
     	
-    	if(tentativo == this.segreto) {
-    		//HAI VINTO
-    		txtRisultato.setText("HAI INDOVINATO CON " + this.tentativiFatti + " TENTATIVI");
-    		hboxTentativi.setDisable(true);
+    	try {
+    	risultato= this.model.tentativo(tentativo);
+    	} catch(InvalidParameterException ip) {
+    		txtRisultato.setText(ip.getMessage());
     		return;
+    	} catch(IllegalStateException is ) {
+    		txtRisultato.setText(is.getMessage());
+    		hboxTentativi.setDisable(true);
+    		return;  
+    		
     	}
     	
+    	
+    	if(risultato==0) {
+    		//HAI VINTO
+    		txtRisultato.setText("HAI INDOVINATO CON " + this.model.getTentativiFatti() + " TENTATIVI");
+    		hboxTentativi.setDisable(true);
+    	} else if (risultato == -1) {
+    		txtRisultato.setText("Tentativo Troppo Basso!");
+    	} else if (risultato==1)
+    		txtRisultato.setText("Tentativo Troppo Alto!");    		
+    	
+    	/*
     	if(this.tentativiFatti == TMAX) {
     		//esaurito i tentativi -> HAI PERSO
     		txtRisultato.setText("HAI PERSO! IL SEGRETO ERA: " + this.segreto);
     		hboxTentativi.setDisable(true);
     		return;
     	}
-    	
-    	if(tentativo < this.segreto) {
-    		txtRisultato.setText("Tentativo Troppo Basso!");
-    	} else {
-    		txtRisultato.setText("Tentativo Troppo Alto!");
-    	}
-    	
-    	txtTentativi.setText(Integer.toString(TMAX-tentativiFatti));
+    	*/
+      	
+    	txtTentativi.setText(Integer.toString(this.model.getTMAX() - this.model.getTentativiFatti()));
     	
     }
 
