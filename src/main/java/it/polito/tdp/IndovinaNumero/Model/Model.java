@@ -11,6 +11,7 @@ public class Model {
 	private int tentativiFatti;
 	private Set<Integer> tentativi;
 	private boolean inGioco = false;
+	
 
 	public void nuovaPartita() {
 	   	//gestione di una nuova partita
